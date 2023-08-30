@@ -55,7 +55,40 @@ namespace WebAppPlayerManagement.Controllers
         // GET: Player/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            Player player = new Player();
+            try
+            {
+                con = new SqlConnection(conString);
+                cmd = new SqlCommand("select * from Players where PlayerId=@id");
+                cmd.Parameters.AddWithValue("@id", id);
+                cmd.Connection = con;
+                con.Open();
+                reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    player =
+                        new Player()
+                        {
+                            PlayerId = (int)(reader["PlayerId"]),
+                            FirstName = (string)reader["FirstName"],
+                            LastName = (string)reader["LastName"],
+                            JerseyNumber = (int)reader["JerseyNumber"],
+                            Position = (int)reader["Position"],
+                            Team = (string)reader["Team"]
+                        };
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["error"] = ex.Message;
+                return View("Error");
+
+            }
+            finally
+            {
+                con.Close();
+            }
+            return View(player);
         }
 
         // GET: Player/Create
@@ -140,7 +173,7 @@ namespace WebAppPlayerManagement.Controllers
             try
             {
                 con = new SqlConnection(conString);
-                cmd = new SqlCommand("select * from Players where Id=@id");
+                cmd = new SqlCommand("select * from Players where PlayerId=@id");
                 cmd.Parameters.AddWithValue("@id", id);
                 cmd.Connection = con;
                 con.Open();
@@ -182,7 +215,7 @@ namespace WebAppPlayerManagement.Controllers
                 con = new SqlConnection(conString);
                 cmd = new SqlCommand("delete from Players where PlayerId=@id");
                 cmd.Connection = con;
-                cmd.Parameters.AddWithValue("@id", player.PlayerId);
+                cmd.Parameters.AddWithValue("@id", id);
                 con.Open();
                 cmd.ExecuteNonQuery();
                 return RedirectToAction("Index");
